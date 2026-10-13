@@ -86,6 +86,7 @@ Proyek ini dibangun menggunakan teknologi pilihan yang handal dan modular:
 
 | Termasuk Dalam Proyek (In-Scope) | Tidak Termasuk (Out-of-Scope) |
 | :--- | :--- |
+| ✅ System Login dan Register Untuk Penyewa | |
 | ✅ Katalog Kamera, Price List, & Jadwal Ketersediaan | ❌ Aplikasi Mobile Native (Android / iOS) |
 | ✅ Pemesanan Digital & Integrasi WhatsApp | ❌ Pelacakan Lokasi GPS Unit Kamera Sewa |
 | ✅ Dashboard Admin, Ekspor PDF/Excel, & Grafik Bulanan | |
