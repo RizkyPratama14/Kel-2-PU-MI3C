@@ -25,11 +25,11 @@ Sebelum sistem ini dibangun, seluruh proses pengecekan jadwal, pencatatan transa
 
 | No | Nama Anggota | NIM | Peran Utama |
 | :---: | :--- | :---: | :--- |
-| 1. | **Alivia Ananda** | `2401091022` | Database Architecture & Backend |
-| 2. | **Rahmad Irwanda** | `2401091026` | UI/UX Design & Frontend |
+| 1. | **Alivia Ananda** | `2401091022` | Frontend & Backend |
+| 2. | **Rahmad Irwanda** | `2401091026` | Database |
 | 3. | **Rizky Pratama** | `2401091028` | Product Owner & Backend |
-| 4. | **Ririn Alifia** | `2401092025` | Frontend Slicing & Integration |
-| 5. | **Tri Wulan Dari Septia Anantha** | `2401093014` | Frontend Slicing & Quality Control |
+| 4. | **Ririn Alifia** | `2401092025` | Database |
+| 5. | **Tri Wulan Dari Septia Anantha** | `2401093014` | Frontend |
 
 * **Client / Project Sponsor:** Cinta Gusnaini (Owner Digicam Padang)
 * **Institusi:** Politeknik Negeri Padang
