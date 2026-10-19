@@ -7,25 +7,47 @@ use Illuminate\Database\Seeder;
 
 class CameraSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
+        // [nama, merek, harga 24 jam, deskripsi (berisi daftar tarif), foto]
         $data = [
-        ['Canon EOS M50', 'Canon', 150000, 'Mirrorless ringan, cocok untuk vlog dan foto harian.', 'canon-m50.jpg'],
-        ['Sony A6000', 'Sony', 160000, 'Autofokus cepat, favorit pemula.', 'sony-a6000.jpg'],
-        ['Fujifilm X-T200', 'Fujifilm', 180000, 'Warna khas Fujifilm, body stylish.', 'fuji-xt200.jpg'],
-        ['Canon 700D', 'Canon', 120000, 'DSLR klasik untuk belajar fotografi.', 'canon-700d.jpg'],
-        ['Nikon D5600', 'Nikon', 140000, 'DSLR dengan layar flip dan hasil tajam.', 'nikon-d5600.jpg'],
-        ['Sony ZV-E10', 'Sony', 200000, 'Kamera vlog dengan mikrofon yang bagus.', 'sony-zve10.jpg'],
-    ];
+            [
+                'Canon EOS M10',
+                'Canon',
+                100000,
+                "Kamera mirrorless ringan dengan layar flip.\n"
+                . "Tarif: 30.000 / 3 jam, 50.000 / 6 jam, 65.000 / 8 jam, 80.000 / 12 jam, 100.000 / 24 jam.",
+                'canon-eos-m10.jpg',
+            ],
+            [
+                'Sony Cyber-shot W320',
+                'Sony',
+                70000,
+                "Kamera pocket digital yang ringkas dan praktis dibawa.\n"
+                . "Tarif: 25.000 / 6 jam, 50.000 / 12 jam, 70.000 / 24 jam, 120.000 / 48 jam, 55.000 / 3 hari atau lebih.",
+                'sony-cybershot-w320.jpg',
+            ],
+            [
+                'Kodak Pixpro FZ55',
+                'Kodak',
+                80000,
+                "Kamera pocket digital dengan body hitam yang simpel.\n"
+                . "Tarif: 30.000 / 6 jam, 60.000 / 12 jam, 80.000 / 24 jam.",
+                'kodak-pixpro-fz55.jpg',
+            ],
+        ];
 
-    foreach ($data as [$nama, $merek, $harga, $desk, $foto]) {
-        Camera::create([
-            'nama' => $nama, 'merek' => $merek, 'harga_per_hari' => $harga,
-            'deskripsi' => $desk, 'foto' => $foto, 'status' => 'tersedia',
-        ]);
-    }
+        foreach ($data as [$nama, $merek, $harga, $desk, $foto]) {
+            Camera::updateOrCreate(
+                ['nama' => $nama],
+                [
+                    'merek'          => $merek,
+                    'harga_per_hari' => $harga,
+                    'deskripsi'      => $desk,
+                    'foto'           => $foto,
+                    'status'         => 'tersedia',
+                ]
+            );
+        }
     }
 }
