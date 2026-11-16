@@ -9,9 +9,10 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'home')->name('home');
 Route::get('/katalog', [CameraController::class, 'index'])->name('katalog');
 Route::get('/katalog/{camera}', [CameraController::class, 'show'])->name('katalog.show');
-Route::get('/price-list', fn () => view('price-list', ['cameras' => Camera::all()]))->name('price');
+Route::get('/price-list', fn () => view('price_list', ['cameras' => Camera::all()]))->name('price');
 Route::view('/aturan-sewa', 'aturan')->name('aturan');
-Route::get('/cek-ketersediaan', fn () => view('ketersediaan', ['cameras' => Camera::all()]))->name('cek');
+Route::get('/cek-ketersediaan', [CameraController::class, 'checkAvailability'])->name('cek');
+Route::post('/cek-ketersediaan', [CameraController::class, 'validateSchedule'])->name('cek.validate')->middleware('auth');
 
 // Auth Routes
 Route::middleware('guest')->group(function () {

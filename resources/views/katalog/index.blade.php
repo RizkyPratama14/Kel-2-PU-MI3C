@@ -1,37 +1,26 @@
 @extends('layouts.app')
-@section('title', 'Katalog Kamera')
+@section('title', 'Katalog Kamera - Digicam Padang')
 
 @section('content')
 <section class="section">
     <div class="container">
         <h2>Katalog Kamera</h2>
-        <p class="sub">Pilih kamera sesuai kebutuhanmu.</p>
+        <p class="sub">Jelajahi pilihan kamera digital berkualitas kami. Temukan unit yang pas untuk momen terbaikmu.</p>
 
-        <form method="GET" action="{{ route('katalog') }}" class="filter">
-            <input type="text" name="q" placeholder="Cari kamera..." value="{{ request('q') }}">
-            <select name="merek">
-                <option value="">Semua Merek</option>
-                @foreach($mereks as $m)
-                    <option value="{{ $m }}" @selected(request('merek') == $m)>{{ $m }}</option>
-                @endforeach
-            </select>
-            <button class="btn">Cari</button>
-        </form>
-
-        <div class="grid">
-            @forelse($cameras as $c)
-            <div class="card">
-                <span class="badge {{ $c->status }}">{{ ucfirst($c->status) }}</span>
-                <img src="{{ asset('images/'.$c->foto) }}" alt="{{ $c->nama }}"
-                     onerror="this.onerror=null;this.src='{{ asset('images/placeholder.svg') }}'">
-                <h3>{{ $c->nama }}</h3>
-                <div class="merek">{{ $c->merek }}</div>
-                <p class="harga">Rp {{ number_format($c->harga_per_hari, 0, ',', '.') }} / hari</p>
-                <a href="{{ route('katalog.show', $c) }}" class="btn">Lihat Detail</a>
-            </div>
-            @empty
-                <p>Kamera tidak ditemukan.</p>
-            @endforelse
+        <div style="
+            text-align: center;
+            padding: 64px 24px;
+            background: var(--color-bg-card);
+            border-radius: var(--radius-lg);
+            border: 1px dashed var(--color-border);
+            margin-top: 24px;
+        ">
+            <div style="font-size: 3.5rem; margin-bottom: 16px;">📷</div>
+            <h3 style="margin-bottom: 8px; color: var(--color-text);">Belum Ada Kamera</h3>
+            <p style="color: var(--color-text-muted); font-size: 1rem; max-width: 380px; margin: 0 auto;">
+                Admin belum menambahkan kamera apapun ke dalam katalog.
+                Silakan cek kembali beberapa saat lagi.
+            </p>
         </div>
     </div>
 </section>
