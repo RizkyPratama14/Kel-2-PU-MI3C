@@ -17,6 +17,7 @@ class Booking extends Model
         'lokasi_pickup',
         'status_booking',
         'status_pembayaran',
+        'metode_pembayaran',
         'payment_ref',
         'expired_at',
     ];
@@ -97,6 +98,36 @@ class Booking extends Model
     public static function adaBentrok(int $unitId, string $mulai, string $selesai): bool
     {
         return static::bentrokDengan($unitId, $mulai, $selesai)->exists();
+    }
+
+    /**
+     * Tentukan status ketersediaan unit: "Tersedia" atau "Tersewa".
+     *
+     * Aturan bentrok (overlap):
+     * Dua rentang waktu [A, B) dan [C, D) dianggap bentrok jika:
+     *   mulai_A < selesai_B && selesai_A > mulai_B
+     *
+     * Jika ada bentrok -> "Tersewa", jika tidak ada -> "Tersedia".
+     */
+    public static function cekStatus(int $unitId, string $mulai, string $selesai): string
+    {
+        return static::adaBentrok($unitId, $mulai, $selesai) ? 'Tersewa' : 'Tersedia';
+    }
+
+    /**
+     * Logic perbandingan bentrok (overlap) murni antara dua rentang waktu:
+     * Dua rentang dianggap bentrok jika: mulai_A < selesai_B && selesai_A > mulai_B
+     *
+     * Jadwal berdampingan presisi (misal selesai 12.00 dan mulai 12.00) TIDAK dianggap bentrok.
+     */
+    public static function isOverlap(string $mulaiA, string $selesaiA, string $mulaiB, string $selesaiB): bool
+    {
+        $startA = \Carbon\Carbon::parse($mulaiA);
+        $endA   = \Carbon\Carbon::parse($selesaiA);
+        $startB = \Carbon\Carbon::parse($mulaiB);
+        $endB   = \Carbon\Carbon::parse($selesaiB);
+
+        return $startA->lt($endB) && $endA->gt($startB);
     }
 
     /**
