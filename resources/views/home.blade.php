@@ -5,7 +5,7 @@
 <section class="hero">
     <div class="container">
         <h1>Sewa Kamera Mudah di Padang</h1>
-        <p>Pilih kamera favoritmu, cek ketersediaan, lalu pesan lewat WhatsApp. Proses mudah, harga terjangkau!</p>
+        <p>Pilih kamera favoritmu, cek ketersediaan, lalu pesan dengan Proses mudah, harga terjangkau!</p>
         <div class="hero-btns">
             <a href="{{ route('katalog') }}" class="btn">📷 Lihat Katalog</a>
             <a href="{{ route('cek') }}" class="btn btn-outline">📅 Cek Ketersediaan</a>

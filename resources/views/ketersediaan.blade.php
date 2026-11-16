@@ -12,7 +12,7 @@
         <div class="auth-card" style="max-width: 580px; margin: 0 auto; text-align: center;">
             <div style="font-size: 3rem; margin-bottom: 12px;">🔒</div>
             <h3 style="font-size: 1.4rem; color: var(--color-text-heading); margin-bottom: 12px;">
-                Form Jadwal Terkunci (US-1008)
+                Form Jadwal Terkunci
             </h3>
             <p style="color: var(--color-text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 28px;">
                 Sesuai ketentuan <strong>Sprint 1</strong>, form pemilihan tanggal dan jam sewa hanya terbuka untuk penyewa yang telah terdaftar dan masuk ke akun. Silakan masuk atau buat akun baru terlebih dahulu.
