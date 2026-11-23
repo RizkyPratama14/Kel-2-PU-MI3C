@@ -10,20 +10,12 @@ use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
-    /**
-     * Tampilkan halaman login.
-     */
     public function showLogin()
     {
-        if (Auth::check()) {
-            return redirect()->route('home');
-        }
+        if (Auth::check()) return redirect()->route('home');
         return view('auth.login');
     }
 
-    /**
-     * Proses login pengguna.
-     */
     public function login(Request $request)
     {
         $credentials = $request->validate([
@@ -31,64 +23,64 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        $remember = $request->boolean('remember');
-
-        if (Auth::attempt($credentials, $remember)) {
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
             $request->session()->regenerate();
             return redirect()->intended(route('home'))
-                ->with('success', 'Selamat datang kembali, ' . Auth::user()->name . '!');
+                ->with('success', 'Selamat datang kembali, ' . Auth::user()->name . '! 👋');
         }
 
         return back()
             ->withInput($request->only('email', 'remember'))
-            ->withErrors(['email' => 'Email atau password yang Anda masukkan salah.']);
+            ->withErrors(['email' => 'Email atau kata sandi salah.']);
     }
 
-    /**
-     * Tampilkan halaman register.
-     */
     public function showRegister()
     {
-        if (Auth::check()) {
-            return redirect()->route('home');
-        }
+        if (Auth::check()) return redirect()->route('home');
         return view('auth.register');
     }
 
-    /**
-     * Proses registrasi pengguna baru.
-     */
     public function register(Request $request)
     {
         $validated = $request->validate([
-            'name'     => ['required', 'string', 'max:255'],
-            'email'    => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Password::min(8)],
+            'name'         => ['required', 'string', 'max:255'],
+            'email'        => ['required', 'string', 'email', 'max:255', 'unique:users'],
+            'no_whatsapp'  => ['required', 'string', 'min:10', 'max:20'],
+            'password'     => ['required', 'confirmed', Password::min(8)],
         ], [
-            'name.required'      => 'Nama lengkap wajib diisi.',
-            'email.required'     => 'Alamat email wajib diisi.',
-            'email.email'        => 'Format email tidak valid.',
-            'email.unique'       => 'Email ini sudah terdaftar. Silakan login.',
-            'password.required'  => 'Password wajib diisi.',
-            'password.confirmed' => 'Konfirmasi password tidak cocok.',
-            'password.min'       => 'Password minimal 8 karakter.',
+            'name.required'        => 'Nama lengkap wajib diisi.',
+            'email.required'       => 'Alamat email wajib diisi.',
+            'email.email'          => 'Format email tidak valid.',
+            'email.unique'         => 'Email ini sudah terdaftar. Silakan login.',
+            'no_whatsapp.required' => 'Nomor WhatsApp wajib diisi.',
+            'no_whatsapp.min'      => 'Nomor WhatsApp minimal 10 digit.',
+            'password.required'    => 'Password wajib diisi.',
+            'password.confirmed'   => 'Konfirmasi password tidak cocok.',
+            'password.min'         => 'Password minimal 8 karakter.',
         ]);
 
-        $user = User::create([
+        $data = [
             'name'     => $validated['name'],
             'email'    => $validated['email'],
             'password' => Hash::make($validated['password']),
-        ]);
+        ];
+
+        // Aman jika migrasi kolom no_whatsapp belum sempat dijalankan
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'no_whatsapp')) {
+            $data['no_whatsapp'] = $validated['no_whatsapp'];
+        }
+        if (\Illuminate\Support\Facades\Schema::hasColumn('users', 'role')) {
+            $data['role'] = 'penyewa';
+        }
+
+        $user = User::create($data);
 
         Auth::login($user);
 
         return redirect()->route('home')
-            ->with('success', 'Akun berhasil dibuat! Selamat datang, ' . $user->name . '!');
+            ->with('success', 'Akun berhasil dibuat! Selamat datang, ' . $user->name . '! 🎉');
     }
 
-    /**
-     * Logout pengguna.
-     */
     public function logout(Request $request)
     {
         Auth::logout();
@@ -96,6 +88,6 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('home')
-            ->with('success', 'Anda berhasil keluar. Sampai jumpa!');
+            ->with('success', 'Anda berhasil keluar. Sampai jumpa! 👋');
     }
 }

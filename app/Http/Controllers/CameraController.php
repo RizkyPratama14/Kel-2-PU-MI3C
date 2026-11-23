@@ -39,10 +39,17 @@ class CameraController extends Controller
 
     /**
      * Halaman pemilihan tanggal & jam rencana sewa (US-1003 & US-1008).
+     * Daftar kamera hardcode sesuai 3 unit resmi @digicampadang_.
      */
     public function checkAvailability(Request $request)
     {
-        $cameras = Camera::all();
+        // Hardcode 3 kamera resmi — tidak ambil dari DB agar selalu konsisten
+        $cameras = collect([
+            (object)['id' => 1, 'nama' => 'Canon EOS M10',       'merek' => 'Canon', 'harga_per_hari' => 100000],
+            (object)['id' => 2, 'nama' => 'Sony Cyber-shot W320', 'merek' => 'Sony',  'harga_per_hari' => 70000],
+            (object)['id' => 3, 'nama' => 'Kodak Pixpro FZ55',    'merek' => 'Kodak', 'harga_per_hari' => 80000],
+        ]);
+
         $selectedCameraId = $request->query('camera_id');
 
         return view('ketersediaan', compact('cameras', 'selectedCameraId'));
@@ -53,15 +60,22 @@ class CameraController extends Controller
      */
     public function validateSchedule(Request $request)
     {
+        // Daftar kamera resmi (hardcode, ID 1-3)
+        $daftarKamera = [
+            1 => (object)['id' => 1, 'nama' => 'Canon EOS M10',       'merek' => 'Canon'],
+            2 => (object)['id' => 2, 'nama' => 'Sony Cyber-shot W320', 'merek' => 'Sony'],
+            3 => (object)['id' => 3, 'nama' => 'Kodak Pixpro FZ55',    'merek' => 'Kodak'],
+        ];
+
         $validated = $request->validate([
-            'camera_id'       => ['required', 'exists:cameras,id'],
+            'camera_id'       => ['required', 'in:1,2,3'],
             'tanggal_mulai'   => ['required', 'date', 'after_or_equal:today'],
             'jam_mulai'       => ['required'],
             'tanggal_kembali' => ['required', 'date', 'after_or_equal:tanggal_mulai'],
             'jam_kembali'     => ['required'],
         ], [
             'camera_id.required'             => 'Silakan pilih kamera yang ingin disewa.',
-            'camera_id.exists'               => 'Kamera yang dipilih tidak valid.',
+            'camera_id.in'                   => 'Kamera yang dipilih tidak valid.',
             'tanggal_mulai.required'         => 'Tanggal mulai sewa wajib diisi.',
             'tanggal_mulai.after_or_equal'   => 'Tanggal sewa tidak boleh menggunakan tanggal yang sudah lewat.',
             'jam_mulai.required'             => 'Jam mulai sewa wajib diisi.',
@@ -79,25 +93,46 @@ class CameraController extends Controller
             }
         }
 
-        $camera = Camera::findOrFail($validated['camera_id']);
+        $camId  = (int) $validated['camera_id'];
+        $camera = $daftarKamera[$camId];
 
-        $start = Carbon::parse($validated['tanggal_mulai'] . ' ' . $validated['jam_mulai']);
-        $end   = Carbon::parse($validated['tanggal_kembali'] . ' ' . $validated['jam_kembali']);
+        $start = Carbon::parse($validated['tanggal_mulai'] . ' ' . $validated['jam_mulai'], 'Asia/Jakarta');
+        $end   = Carbon::parse($validated['tanggal_kembali'] . ' ' . $validated['jam_kembali'], 'Asia/Jakarta');
+
+        // ── US-1004: Cek bentrok real-time khusus unit kamera yang dipilih ──
+        // Jika kamera berbeda di waktu yang sama, sistem tetap membolehkan (tidak bentrok).
+        if (\App\Models\Booking::adaBentrok($camId, $start, $end)) {
+            $saranKamera = match($camId) {
+                1 => 'Sony Cyber-shot W320 atau Kodak Pixpro FZ55',
+                2 => 'Canon EOS M10 atau Kodak Pixpro FZ55',
+                default => 'Canon EOS M10 atau Sony Cyber-shot W320',
+            };
+            return back()->withInput()->withErrors([
+                'camera_id' => "🔴 Kamera {$camera->nama} sudah dipesan pada jadwal ini. Namun unit lain ({$saranKamera}) masih dapat disewa pada jam tersebut. Silakan pilih unit lain atau ganti jam sewa.",
+            ]);
+        }
+
         $durasiJam = max(1, $start->diffInHours($end));
 
         $estimasiHarga = $this->calculateEstimatedPrice($camera->nama, $durasiJam);
 
-        return back()->withInput()->with('rencana_sewa', [
+        // Simpan rencana ke session, lalu arahkan ke form booking (US-1005)
+        session(['rencana_sewa' => [
             'camera'          => $camera,
             'mulai'           => $start->translatedFormat('d F Y, H:i'),
             'kembali'         => $end->translatedFormat('d F Y, H:i'),
+            'mulai_at'        => $start->format('Y-m-d H:i:s'),
+            'selesai_at'      => $end->format('Y-m-d H:i:s'),
             'durasi_jam'      => $durasiJam,
             'estimasi_harga'  => $estimasiHarga,
             'tanggal_mulai'   => $validated['tanggal_mulai'],
             'jam_mulai'       => $validated['jam_mulai'],
             'tanggal_kembali' => $validated['tanggal_kembali'],
             'jam_kembali'     => $validated['jam_kembali'],
-        ])->with('success', 'Rencana sewa berhasil divalidasi!');
+        ]]);
+
+        return redirect()->route('booking.form')
+            ->with('success', 'Jadwal valid! Silakan lengkapi form booking.');
     }
 
     /**

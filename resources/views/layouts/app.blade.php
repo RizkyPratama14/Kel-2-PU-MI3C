@@ -11,7 +11,10 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
-            <a href="{{ route('home') }}" class="logo">📷 Digicam Padang</a>
+            <a href="{{ route('home') }}" class="logo">
+                <img src="{{ asset('images/logo-grent.png') }}" alt="Logo" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1.5px solid rgba(255,127,162,0.4); vertical-align: middle;">
+                Digicam Padang
+            </a>
             <button class="hamburger" id="hamburger" aria-label="Buka menu" aria-expanded="false">
                 <span></span><span></span><span></span>
             </button>
@@ -83,7 +86,10 @@
         <div class="container">
             <div class="footer-top">
                 <div class="footer-brand">
-                    <span class="footer-logo">📷 Digicam Padang</span>
+                    <span class="footer-logo">
+                        <img src="{{ asset('images/logo-grent.png') }}" alt="GRENT Logo" style="width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border: 1.5px solid rgba(255,127,162,0.4); vertical-align: middle;">
+                        Digicam Padang
+                    </span>
                     <p>Sewa kamera mudah, terjangkau, dan terpercaya di Padang.</p>
                 </div>
                 <div class="footer-links">
@@ -147,6 +153,27 @@
                 flash.style.transform = 'translateY(-10px)';
                 setTimeout(() => flash.remove(), 400);
             }, 4000);
+        }
+
+        // Toggle Show / Hide Password
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const eyeOpen = btn.querySelector('.eye-open');
+            const eyeClosed = btn.querySelector('.eye-closed');
+            if (input.type === 'password') {
+                // Tampilkan password (buka mata)
+                input.type = 'text';
+                if (eyeOpen) eyeOpen.style.display = 'block';
+                if (eyeClosed) eyeClosed.style.display = 'none';
+                btn.setAttribute('aria-label', 'Sembunyikan Password');
+            } else {
+                // Sembunyikan password (mata coret)
+                input.type = 'password';
+                if (eyeOpen) eyeOpen.style.display = 'none';
+                if (eyeClosed) eyeClosed.style.display = 'block';
+                btn.setAttribute('aria-label', 'Lihat Password');
+            }
         }
     </script>
 </body>

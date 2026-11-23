@@ -4,8 +4,13 @@
 @section('content')
 <section class="hero">
     <div class="container">
-        <h1>Sewa Kamera Mudah di Padang</h1>
-        <p>Pilih kamera favoritmu, cek ketersediaan, lalu pesan dengan Proses mudah, harga terjangkau!</p>
+        {{-- Logo GRENT Sewa Digicam Padang --}}
+        <div class="hero-logo-box">
+            <img src="{{ asset('images/logo-grent.png') }}" alt="GRENT Sewa Digicam Padang" class="hero-logo-img">
+        </div>
+
+        <h1>Abadikan Setiap Momen Aesthetic & Seru di Padang</h1>
+        <p>Sewa kamera digital favoritmu untuk hangout, liburan, dan wisuda. Cek ketersediaan secara real-time, booking praktis, dan harga ramah di kantong!</p>
         <div class="hero-btns">
             <a href="{{ route('katalog') }}" class="btn">📷 Lihat Katalog</a>
             <a href="{{ route('cek') }}" class="btn btn-outline">📅 Cek Ketersediaan</a>
