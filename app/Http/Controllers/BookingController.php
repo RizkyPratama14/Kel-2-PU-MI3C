@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreBookingRequest;
 use App\Models\Booking;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+<<<<<<< HEAD
 use Illuminate\Support\Str;
+=======
+use Illuminate\Support\Facades\Log;
+>>>>>>> db308a1cbc261e6d38ede29640ef7550ac5bf4f0
 
 class BookingController extends Controller
 {
@@ -62,6 +67,7 @@ class BookingController extends Controller
             'selesai_at'=> $selesaiAt->format('Y-m-d H:i:s'),
         ]);
 
+<<<<<<< HEAD
         return view('booking.form', [
             'rencana'  => $rencanaLengkap,
             'tersedia' => $tersedia,
@@ -107,6 +113,53 @@ class BookingController extends Controller
             return back()->withInput()->with('error',
                 '⚠️ Tabel database "bookings" belum dibuat. Harap jalankan perintah "php artisan migrate" di terminal terlebih dahulu.'
             );
+=======
+        $unitId  = $camera->id;
+        $mulai   = $request->mulai;
+        $selesai = $request->selesai;
+
+        // ----- Query bentrok & status ketersediaan (T3) -----
+        $status = Booking::cekStatus($unitId, $mulai, $selesai);
+        $tersedia = ($status === 'Tersedia');
+
+        return response()->json([
+            'unit'        => [
+                'id'    => $camera->id,
+                'nama'  => $camera->nama,
+                'merek' => $camera->merek,
+            ],
+            'status'      => $status,
+            'tersedia'    => $tersedia,
+            'mulai'       => $mulai,
+            'selesai'     => $selesai,
+            'server_time' => now('Asia/Jakarta')->toIso8601String(),
+        ]);
+    }
+
+    // -------------------------------------------------------------------------
+    // POST /bookings
+    // Simpan booking — user_id dari sesi Auth, waktu dari server (Asia/Jakarta)
+    // T15: Redirect ke WhatsApp setelah booking berhasil disimpan
+    // T16: Jika gagal simpan, tampilkan pesan error ke view
+    // -------------------------------------------------------------------------
+    public function store(StoreBookingRequest $request)
+    {
+        $unitId  = $request->unit_id;
+        $mulai   = $request->mulai_at;
+        $selesai = $request->selesai_at;
+
+        // ── Pengecekan bentrok ──────────────────────────────────────────────
+        if (Booking::adaBentrok($unitId, $mulai, $selesai)) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => 'Jadwal yang dipilih sudah dipesan oleh pengguna lain.',
+                ], 422);
+            }
+
+            return back()->withInput()->withErrors([
+                'unit_id' => 'Jadwal yang dipilih sudah dipesan oleh pengguna lain.',
+            ]);
+>>>>>>> db308a1cbc261e6d38ede29640ef7550ac5bf4f0
         }
 
         // ── US-1004: Cek bentrok jadwal real-time khusus unit ini ───────
@@ -127,6 +180,7 @@ class BookingController extends Controller
                 $user->save();
             }
 
+<<<<<<< HEAD
             return Booking::create([
                 'kode_booking'      => Booking::generateKode(),
                 'user_id'           => Auth::id(),           // dari sesi, bukan input
@@ -143,9 +197,38 @@ class BookingController extends Controller
                 'payment_ref'       => null,
                 'expired_at'        => now('Asia/Jakarta')->addHours(24),
                 // created_at diisi otomatis Eloquent (zona Asia/Jakarta dari config)
-            ]);
-        });
+=======
+        // ── T16: Simpan dalam transaksi DB dengan penanganan error ──────────
+        try {
+            $booking = DB::transaction(function () use (
+                $request, $unitId, $mulai, $selesai, $durasiJam
+            ) {
+                return Booking::create([
+                    'kode_booking'      => Booking::generateKode(),
+                    'user_id'           => Auth::id(),
+                    'unit_id'           => $unitId,
+                    'mulai_at'          => \Carbon\Carbon::parse($mulai, 'Asia/Jakarta'),
+                    'selesai_at'        => \Carbon\Carbon::parse($selesai, 'Asia/Jakarta'),
+                    'durasi_jam'        => $durasiJam,
+                    'lokasi_pickup'     => $request->lokasi_pickup,
+                    'status_booking'    => self::STATUS_MENUNGGU_VERIFIKASI,
+                    'status_pembayaran' => 'Belum Bayar',
+                    'metode_pembayaran' => $request->metode_pembayaran,
+                    'payment_ref'       => null,
+                    'expired_at'        => null,
+                ]);
+            });
+        } catch (\Throwable $e) {
+            // T16: Jika penyimpanan gagal, redirect TIDAK berjalan
+            Log::error('Gagal menyimpan booking: ' . $e->getMessage());
 
+            return back()->withInput()->withErrors([
+                'simpan' => 'Terjadi kesalahan saat menyimpan data booking. Silakan coba lagi.',
+>>>>>>> db308a1cbc261e6d38ede29640ef7550ac5bf4f0
+            ]);
+        }
+
+<<<<<<< HEAD
         // ── US-1006: Siapkan URL WhatsApp konfirmasi ────────────────────
         $cam    = self::daftarKamera()[$camId];
         $waText = implode("\n", [
@@ -163,6 +246,46 @@ class BookingController extends Controller
             "Estimasi DP  : Rp " . number_format($booking->estimasi_harga / 2, 0, ',', '.'),
             '',
             'Mohon konfirmasi ketersediaan unit dan instruksi pembayaran DP 50%. Terima kasih!',
+=======
+        // ── T15: Redirect ke WhatsApp HANYA jika status = "Menunggu Verifikasi" ──
+        if ($booking->status_booking === self::STATUS_MENUNGGU_VERIFIKASI) {
+            $camera = Camera::find($booking->unit_id);
+            $user   = Auth::user();
+
+            $pesan = "Halo Admin Digicam Padang,\n"
+                   . "Saya ingin konfirmasi booking kamera.\n\n"
+                   . "📋 *Detail Booking:*\n"
+                   . "Kode: {$booking->kode_booking}\n"
+                   . "Nama: {$user->name}\n"
+                   . "Kamera: {$camera->nama} ({$camera->merek})\n"
+                   . "Mulai: {$booking->mulai_at->format('d/m/Y H:i')}\n"
+                   . "Selesai: {$booking->selesai_at->format('d/m/Y H:i')}\n"
+                   . "Durasi: {$booking->durasi_jam} jam\n"
+                   . "Lokasi Pickup: {$booking->lokasi_pickup}\n"
+                   . "Metode Bayar: {$booking->metode_pembayaran}\n"
+                   . "Status: {$booking->status_booking}\n\n"
+                   . "Mohon diverifikasi. Terima kasih! 🙏";
+
+            $waUrl = 'https://wa.me/6283181125461?text=' . urlencode($pesan);
+
+            return redirect()->away($waUrl);
+        }
+
+        // Fallback jika status bukan "Menunggu Verifikasi"
+        return back()->with('success', 'Booking berhasil dibuat.');
+    }
+
+    // -------------------------------------------------------------------------
+    // GET /bookings/aktif?unit_id=X&mulai=...&selesai=...
+    // Ambil daftar booking aktif pada kamera tertentu dalam rentang waktu
+    // -------------------------------------------------------------------------
+    public function aktifByUnit(Request $request)
+    {
+        $request->validate([
+            'unit_id' => ['required', 'exists:cameras,id'],
+            'mulai'   => ['required', 'date'],
+            'selesai' => ['required', 'date', 'after:mulai'],
+>>>>>>> db308a1cbc261e6d38ede29640ef7550ac5bf4f0
         ]);
 
         $waUrl = 'https://wa.me/6283181125461?text=' . urlencode($waText);
