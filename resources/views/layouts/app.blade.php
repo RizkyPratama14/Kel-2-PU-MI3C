@@ -148,6 +148,27 @@
                 setTimeout(() => flash.remove(), 400);
             }, 4000);
         }
+
+        // Toggle Show / Hide Password
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const eyeOpen = btn.querySelector('.eye-open');
+            const eyeClosed = btn.querySelector('.eye-closed');
+            if (input.type === 'password') {
+                // Tampilkan password (buka mata)
+                input.type = 'text';
+                if (eyeOpen) eyeOpen.style.display = 'block';
+                if (eyeClosed) eyeClosed.style.display = 'none';
+                btn.setAttribute('aria-label', 'Sembunyikan Password');
+            } else {
+                // Sembunyikan password (mata coret)
+                input.type = 'password';
+                if (eyeOpen) eyeOpen.style.display = 'none';
+                if (eyeClosed) eyeClosed.style.display = 'block';
+                btn.setAttribute('aria-label', 'Lihat Password');
+            }
+        }
     </script>
 </body>
 </html>
