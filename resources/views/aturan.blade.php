@@ -1,99 +1,86 @@
-
 @extends('layouts.app')
-@section('title', 'Aturan Sewa')
+@section('title', 'Aturan Sewa - Digicam Padang')
 
 @section('content')
 <section class="section">
     <div class="container">
-        <h2> Aturan Sewa </h2>
-        <p class="sub">Harap dibaca sebelum menyewa.</p>
+        <h2>Aturan Sewa</h2>
+        <p class="sub">Harap membaca dan memahami syarat serta aturan sewa sebelum melakukan pemesanan di @digicampadang_.</p>
 
-        <p class="sub">
-            <a href="https://instagram.com/digicampadang_"
-               target="_blank"
-               rel="noopener noreferrer">
-                @digicampadang_
+        <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 36px;">
+            <a href="https://instagram.com/digicampadang_" target="_blank" rel="noopener" class="btn btn-outline" style="font-size: 0.88rem;">
+                📷 Instagram: @digicampadang_
             </a>
-        </p>
+            <a href="https://wa.me/6283181125461" target="_blank" rel="noopener" class="btn btn-wa" style="font-size: 0.88rem;">
+                💬 WhatsApp: +62 831-8112-5461
+            </a>
+        </div>
 
         <ol class="rules">
             <li>
-                <strong>Waktu Penyewaan</strong><br>
-                Penyewaan berlaku sesuai durasi yang dipilih,
-                yaitu 6 jam, 12 jam, atau 24 jam, atau lebih
-                sesuai kesepakatan.
+                <strong>1. Waktu Penyewaan</strong>
+                Penyewaan berlaku sesuai durasi yang dipilih, yaitu 3 jam, 6 jam, 12 jam, 24 jam, atau lebih sesuai kesepakatan dan paket yang tersedia.
             </li>
 
             <li>
-                <strong>Keterlambatan Pengembalian</strong><br>
-                Toleransi keterlambatan adalah 30 menit.
-                Apabila melewati batas toleransi, penyewa akan
-                dikenakan denda keterlambatan:
-                <br>⏱️ 60 menit: Rp15.000.
+                <strong>2. Keterlambatan Pengembalian</strong>
+                Toleransi keterlambatan adalah 30 menit. Apabila melewati batas toleransi, penyewa akan dikenakan denda keterlambatan:
+                <br><span style="color: var(--color-gold); font-weight: 600;">⏱️ Tiap 60 menit: Denda Rp 15.000.</span>
             </li>
 
             <li>
-                <strong>Penambahan Durasi Sewa</strong><br>
-                Apabila ingin menambah durasi sewa, akan
-                dikenakan biaya sebesar Rp10.000 per jam
-                dan berlaku kelipatan.
+                <strong>3. Penambahan Durasi Sewa</strong>
+                Apabila ingin menambah durasi sewa, harap konfirmasi terlebih dahulu dan akan dikenakan biaya sebesar <strong>Rp 10.000 per jam</strong> (berlaku kelipatan, selama jadwal unit masih memungkinkan).
             </li>
 
             <li>
-                <strong>Pembayaran</strong><br>
-                Pembayaran dilakukan dengan DP sebesar 50%
-                terlebih dahulu untuk mengunci jadwal sewa.
+                <strong>4. Pembayaran & Penguncian Jadwal</strong>
+                Pembayaran dilakukan dengan DP sebesar <strong>50%</strong> terlebih dahulu untuk mengunci tanggal dan jam sewa kamera.
             </li>
 
             <li>
-                <strong>Jaminan Penyewaan</strong><br>
-                Penyewa wajib memberikan KTP atau KTM
-                sebagai jaminan selama masa penyewaan.
+                <strong>5. Jaminan Penyewaan</strong>
+                Penyewa wajib menitipkan identitas asli yang masih berlaku (KTP atau KTM) sebagai jaminan selama masa penyewaan.
             </li>
 
             <li>
-                <strong>Tanggung Jawab Penyewa</strong><br>
-                Penyewa bertanggung jawab atas kamera selama
-                masa penyewaan. Jika terjadi kerusakan atau
-                kehilangan, penyewa wajib mengganti sesuai
-                kerugian yang terjadi.
+                <strong>6. Tanggung Jawab Penyewa</strong>
+                Penyewa bertanggung jawab penuh atas kamera selama masa sewa. Jika terjadi kerusakan, lecet berat, atau kehilangan komponen/unit, penyewa wajib mengganti sesuai nilai kerugian yang timbul.
             </li>
 
             <li>
-                <strong>Kelengkapan Kamera</strong><br>
-                Kamera yang disewa sudah termasuk:
+                <strong>7. Kelengkapan Unit Kamera</strong>
+                Setiap kamera yang disewa sudah termasuk paket lengkap:
                 <ul>
-                    <li>Kamera</li>
-                    <li>Memory card</li>
-                    <li>Pouch kamera</li>
-                    <li>Charger baterai kamera</li>
-                    <li>Card reader</li>
+                    <li>Unit Kamera</li>
+                    <li>Memory Card / SD Card</li>
+                    <li>Pouch / Tas Pelindung Kamera</li>
+                    <li>Baterai & Charger Baterai Kamera</li>
+                    <li>Card Reader (OTG) untuk transfer file foto</li>
                 </ul>
-                <p>
-                    Harap mengembalikan seluruh perlengkapan
-                    dalam kondisi lengkap dan baik.
+                <p style="margin-top: 8px; color: var(--color-text-muted); font-size: 0.88rem;">
+                    Harap mengembalikan seluruh perlengkapan dalam kondisi bersih, lengkap, dan berfungsi normal.
                 </p>
             </li>
 
             <li>
-                <strong>Pembatalan Sewa</strong><br>
-                Apabila terjadi pembatalan dari pihak penyewa,
-                DP yang telah dibayarkan tidak dapat
-                dikembalikan atau hangus.
+                <strong>8. Kebijakan Pembatalan Sewa</strong>
+                Apabila terjadi pembatalan sepihak dari penyewa, uang muka (DP) yang telah dibayarkan tidak dapat dikembalikan (hangus).
             </li>
 
             <li>
-                <strong>Reschedule / Perubahan Jadwal</strong><br>
-                Jika ingin melakukan perubahan jadwal,
-                mohon konfirmasi paling lambat H-1 sebelum
-                hari penyewaan.
+                <strong>9. Reschedule / Perubahan Jadwal</strong>
+                Perubahan jadwal sewa (reschedule) diperbolehkan dengan konfirmasi paling lambat <strong>H-1</strong> sebelum waktu sewa, disesuaikan dengan ketersediaan unit.
             </li>
         </ol>
 
-        <p class="sub" style="margin-top:20px; text-align:center;">
-            Terima kasih sudah mempercayakan momen kakak
-            bersama <strong>@digicampadang_</strong> 
-        </p>
+        <div class="info-banner" style="margin-top: 40px;">
+            <span class="info-banner-icon">💬</span>
+            <div class="info-banner-content">
+                <p><strong>Ada pertanyaan mengenai aturan sewa?</strong></p>
+                <p>Hubungi admin kami di WhatsApp <a href="https://wa.me/6283181125461" target="_blank" rel="noopener">+62 831-8112-5461</a> atau DM Instagram <a href="https://instagram.com/digicampadang_" target="_blank" rel="noopener">@digicampadang_</a>.</p>
+            </div>
+        </div>
     </div>
 </section>
 @endsection
