@@ -13,11 +13,17 @@ Route::get('/katalog', [CameraController::class, 'index'])->name('katalog');
 Route::get('/katalog/{camera}', [CameraController::class, 'show'])->name('katalog.show');
 Route::get('/price-list', fn () => view('price_list', ['cameras' => Camera::all()]))->name('price');
 Route::view('/aturan-sewa', 'aturan')->name('aturan');
+
+// Cek Ketersediaan
 Route::get('/cek-ketersediaan', [CameraController::class, 'checkAvailability'])->name('cek');
 Route::post('/cek-ketersediaan', [CameraController::class, 'validateSchedule'])->name('cek.validate')->middleware('auth');
 
-// Booking Routes (T15/T16)
-Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store')->middleware('auth');
+// Booking Routes
+Route::middleware('auth')->group(function () {
+    Route::get('/booking/form', [BookingController::class, 'form'])->name('booking.form');
+    Route::post('/booking', [BookingController::class, 'store'])->name('booking.store');
+    Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+});
 
 // Auth Routes
 Route::middleware('guest')->group(function () {
@@ -29,18 +35,15 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
 
-// ── Admin Routes ────────────────────────────────────────────────────────────
+// Admin Routes
 Route::prefix('admin')->group(function () {
-    // Login admin (tanpa middleware admin, karena belum login)
     Route::middleware('guest')->group(function () {
         Route::get('/login', [AdminAuthController::class, 'showLogin'])->name('admin.login');
         Route::post('/login', [AdminAuthController::class, 'login'])->middleware('throttle:5,1');
     });
 
-    // Logout admin
     Route::post('/logout', [AdminAuthController::class, 'logout'])->name('admin.logout')->middleware('auth');
 
-    // Halaman admin yang diproteksi middleware admin
     Route::middleware(['auth', 'admin'])->group(function () {
         Route::get('/', fn () => view('admin.dashboard'))->name('admin.dashboard');
     });

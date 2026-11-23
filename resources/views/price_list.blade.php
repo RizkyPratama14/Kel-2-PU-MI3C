@@ -41,7 +41,7 @@
                     </div>
                 </div>
                 <div style="padding: 0 24px 20px;">
-                    <a href="https://wa.me/6283181125461?text={{ urlencode('Halo Digicam Padang, saya ingin sewa kamera Canon EOS M10') }}" class="btn btn-wa" style="width: 100%; font-size: 0.85rem;" target="_blank" rel="noopener">💬 Sewa Kamera Ini</a>
+                    <a href="{{ route('cek', ['camera_id' => 1]) }}" class="btn" style="width: 100%; font-size: 0.88rem;">📅 Cek Jadwal & Sewa</a>
                 </div>
             </div>
 
@@ -78,7 +78,7 @@
                     </div>
                 </div>
                 <div style="padding: 0 24px 20px;">
-                    <a href="https://wa.me/6283181125461?text={{ urlencode('Halo Digicam Padang, saya ingin sewa kamera Sony Cybershot W320') }}" class="btn btn-wa" style="width: 100%; font-size: 0.85rem;" target="_blank" rel="noopener">💬 Sewa Kamera Ini</a>
+                    <a href="{{ route('cek', ['camera_id' => 2]) }}" class="btn" style="width: 100%; font-size: 0.88rem;">📅 Cek Jadwal & Sewa</a>
                 </div>
             </div>
 
@@ -107,7 +107,7 @@
                     </div>
                 </div>
                 <div style="padding: 0 24px 20px;">
-                    <a href="https://wa.me/6283181125461?text={{ urlencode('Halo Digicam Padang, saya ingin sewa kamera Kodak Pixpro FZ55') }}" class="btn btn-wa" style="width: 100%; font-size: 0.85rem;" target="_blank" rel="noopener">💬 Sewa Kamera Ini</a>
+                    <a href="{{ route('cek', ['camera_id' => 3]) }}" class="btn" style="width: 100%; font-size: 0.88rem;">📅 Cek Jadwal & Sewa</a>
                 </div>
             </div>
         </div>
@@ -115,8 +115,8 @@
         <div class="info-banner">
             <span class="info-banner-icon">📋</span>
             <div class="info-banner-content">
-                <p><strong>Syarat:</strong> DP 50% & KTP</p>
-                <p><strong>INFO:</strong> <a href="https://wa.me/6283181125461" target="_blank" rel="noopener">+62 831-8112-5461</a></p>
+                <p><strong>Syarat Sewa:</strong> DP 50% & Jaminan KTP / KTM Asli</p>
+                <p><strong>Butuh bantuan atau sewa lebih dari 3 hari?</strong> Hubungi admin via WhatsApp: <a href="https://wa.me/6283181125461" target="_blank" rel="noopener">+62 831-8112-5461</a></p>
             </div>
         </div>
     </div>

@@ -5,7 +5,7 @@
 <section class="section">
     <div class="container">
         <h2>Pemilihan Jadwal & Rencana Sewa</h2>
-        <p class="sub">Tentukan unit kamera favoritmu serta tanggal dan jam mulai hingga pengembalian sewa.</p>
+        <p class="sub">Tentukan unit kamera favoritmu serta tanggal dan jam mulai hingga pengembalian sewa. Setelah itu, hubungi admin via WhatsApp untuk konfirmasi dan pembayaran.</p>
 
         @guest
         {{-- US-1008: Form booking hanya terbuka setelah login --}}
@@ -15,7 +15,7 @@
                 Form Jadwal Terkunci
             </h3>
             <p style="color: var(--color-text-muted); font-size: 0.95rem; line-height: 1.6; margin-bottom: 28px;">
-                Sesuai ketentuan <strong>Sprint 1</strong>, form pemilihan tanggal dan jam sewa hanya terbuka untuk penyewa yang telah terdaftar dan masuk ke akun. Silakan masuk atau buat akun baru terlebih dahulu.
+                Form pemilihan tanggal dan jam sewa hanya terbuka untuk penyewa yang telah terdaftar dan masuk ke akun. Silakan masuk atau buat akun baru terlebih dahulu.
             </p>
             <div style="display: flex; gap: 14px; justify-content: center; flex-wrap: wrap;">
                 <a href="{{ route('login') }}" class="btn" style="min-width: 160px;">
@@ -69,11 +69,13 @@
                     </div>
                 </div>
 
-                @php
-                    $waText = "Halo Digicam Padang, saya (" . Auth::user()->name . ") ingin mengonfirmasi rencana sewa kamera " . session('rencana_sewa.camera.nama') . " dari " . session('rencana_sewa.mulai') . " sampai " . session('rencana_sewa.kembali') . " (durasi " . session('rencana_sewa.durasi_jam') . " jam, estimasi Rp " . number_format(session('rencana_sewa.estimasi_harga'), 0, ',', '.') . "). Mohon info ketersediaan unit dan penguncian jadwal.";
-                @endphp
-                <a href="https://wa.me/6283181125461?text={{ urlencode($waText) }}" target="_blank" rel="noopener" class="btn btn-wa" style="width: 100%;">
-                    💬 Lanjut Hubungi Admin WhatsApp
+                {{-- Setelah validasi, redirect ke form booking (flow baru Sprint 2) --}}
+                <div style="background: rgba(255,127,162,0.08); border: 1px solid rgba(255,127,162,0.25); border-radius: var(--radius-md); padding: 12px 16px; margin-bottom: 14px; font-size: 0.84rem; color: var(--color-text-muted);">
+                    ✅ <strong>Jadwal valid!</strong> Klik tombol di bawah untuk melengkapi form booking dan metode pembayaran DP.
+                </div>
+
+                <a href="{{ route('booking.form') }}" class="btn" style="width: 100%;">
+                    📋 Lanjut ke Form Booking
                 </a>
             </div>
             @endif
@@ -99,6 +101,17 @@
                     @enderror
                 </div>
 
+                {{-- Fast Track Durasi Sewa Sesuai Price List Resmi --}}
+                <div class="fast-track-container" id="fastTrackContainer" style="display: none;">
+                    <div class="fast-track-header">
+                        <span class="fast-track-title">⚡ Fast Track Durasi Sewa (Pricelist Resmi)</span>
+                        <span class="fast-track-subtitle" id="fastTrackSubtitle">Klik durasi untuk otomatis hitung waktu kembali</span>
+                    </div>
+                    <div class="fast-track-grid" id="fastTrackGrid">
+                        {{-- Diisi otomatis oleh JavaScript sesuai kamera yang dipilih --}}
+                    </div>
+                </div>
+
                 {{-- Tanggal & Jam Mulai Sewa --}}
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px;">
                     <div>
@@ -113,7 +126,7 @@
                     <div>
                         <label for="jam_mulai" style="margin-top: 0;">Jam Mulai Sewa</label>
                         <input type="time" id="jam_mulai" name="jam_mulai"
-                               value="{{ old('jam_mulai', '10:00') }}" required>
+                               value="{{ old('jam_mulai', now('Asia/Jakarta')->format('H:i')) }}" required>
                         @error('jam_mulai')
                             <div class="auth-error">{{ $message }}</div>
                         @enderror
@@ -134,7 +147,7 @@
                     <div>
                         <label for="jam_kembali" style="margin-top: 0;">Jam Pengembalian</label>
                         <input type="time" id="jam_kembali" name="jam_kembali"
-                               value="{{ old('jam_kembali', '10:00') }}" required>
+                               value="{{ old('jam_kembali', now('Asia/Jakarta')->addHours(3)->format('H:i')) }}" required>
                         @error('jam_kembali')
                             <div class="auth-error">{{ $message }}</div>
                         @enderror
@@ -145,21 +158,116 @@
                 <div id="validationFeedback" style="margin-top: 20px; padding: 14px 18px; border-radius: var(--radius-md); display: none; font-size: 0.88rem;"></div>
 
                 <button type="submit" class="btn" id="submitBtn" style="margin-top: 24px; width: 100%;">
-                    ✅ Validasi & Tentukan Rencana Sewa
+                    ✅ Hitung Estimasi & Lanjut ke Form Booking
                 </button>
             </form>
         </div>
 
         <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const tglMulai = document.getElementById('tanggal_mulai');
-            const jamMulai = document.getElementById('jam_mulai');
-            const tglKembali = document.getElementById('tanggal_kembali');
-            const jamKembali = document.getElementById('jam_kembali');
-            const feedback = document.getElementById('validationFeedback');
-            const submitBtn = document.getElementById('submitBtn');
+            const cameraSelect = document.getElementById('camera_id');
+            const ftContainer  = document.getElementById('fastTrackContainer');
+            const ftGrid       = document.getElementById('fastTrackGrid');
+            const ftSubtitle   = document.getElementById('fastTrackSubtitle');
+            const tglMulai     = document.getElementById('tanggal_mulai');
+            const jamMulai     = document.getElementById('jam_mulai');
+            const tglKembali   = document.getElementById('tanggal_kembali');
+            const jamKembali   = document.getElementById('jam_kembali');
+            const feedback     = document.getElementById('validationFeedback');
+            const submitBtn    = document.getElementById('submitBtn');
 
-            function validateScheduleClient() {
+            // Data resmi durasi & tarif per kamera sesuai Price List @digicampadang_
+            const cameraPriceLists = {
+                1: { // Canon EOS M10 (dimulai dari 3 jam)
+                    name: 'Canon EOS M10',
+                    tiers: [
+                        { hours: 3,  label: '3 Jam',  price: 'Rp 30.000', rawPrice: 30000 },
+                        { hours: 6,  label: '6 Jam',  price: 'Rp 50.000', rawPrice: 50000 },
+                        { hours: 8,  label: '8 Jam',  price: 'Rp 65.000', rawPrice: 65000 },
+                        { hours: 12, label: '12 Jam', price: 'Rp 80.000', rawPrice: 80000 },
+                        { hours: 24, label: '24 Jam', price: 'Rp 100.000', rawPrice: 100000 },
+                    ]
+                },
+                2: { // Sony Cybershot W320 (dimulai dari 6 jam)
+                    name: 'Sony Cybershot W320',
+                    tiers: [
+                        { hours: 6,  label: '6 Jam',   price: 'Rp 25.000', rawPrice: 25000 },
+                        { hours: 12, label: '12 Jam',  price: 'Rp 50.000', rawPrice: 50000 },
+                        { hours: 24, label: '24 Jam',  price: 'Rp 70.000', rawPrice: 70000 },
+                        { hours: 48, label: '48 Jam',  price: 'Rp 120.000', rawPrice: 120000 },
+                        { hours: 72, label: '3 Hari+', price: 'Rp 165.000', rawPrice: 165000 },
+                    ]
+                },
+                3: { // Kodak Pixpro FZ55 (dimulai dari 6 jam)
+                    name: 'Kodak Pixpro FZ55',
+                    tiers: [
+                        { hours: 6,  label: '6 Jam',  price: 'Rp 30.000', rawPrice: 30000 },
+                        { hours: 12, label: '12 Jam', price: 'Rp 60.000', rawPrice: 60000 },
+                        { hours: 24, label: '24 Jam', price: 'Rp 80.000', rawPrice: 80000 },
+                    ]
+                }
+            };
+
+            // Render tombol Fast Track sesuai kamera yang dipilih
+            function renderFastTrack() {
+                const camId = parseInt(cameraSelect.value);
+                const camData = cameraPriceLists[camId];
+
+                if (!camData) {
+                    ftContainer.style.display = 'none';
+                    ftGrid.innerHTML = '';
+                    return;
+                }
+
+                ftSubtitle.textContent = `Pilihan paket resmi untuk ${camData.name}`;
+                ftGrid.innerHTML = '';
+
+                camData.tiers.forEach(tier => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'fast-track-btn';
+                    btn.setAttribute('data-hours', tier.hours);
+                    btn.innerHTML = `<span>⚡ ${tier.label}</span> <span class="ft-price">${tier.price}</span>`;
+
+                    btn.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        applyFastTrack(tier.hours, btn, tier.price);
+                    });
+
+                    ftGrid.appendChild(btn);
+                });
+
+                ftContainer.style.display = 'block';
+            }
+
+            // Terapkan penambahan jam secara instan
+            function applyFastTrack(hours, activeBtn, formattedPrice) {
+                if (!tglMulai.value || !jamMulai.value) {
+                    const today = new Date();
+                    tglMulai.value = today.toISOString().split('T')[0];
+                    jamMulai.value = String(today.getHours()).padStart(2, '0') + ':00';
+                }
+
+                const start = new Date(`${tglMulai.value}T${jamMulai.value}`);
+                const end = new Date(start.getTime() + hours * 60 * 60 * 1000);
+
+                const year = end.getFullYear();
+                const month = String(end.getMonth() + 1).padStart(2, '0');
+                const day = String(end.getDate()).padStart(2, '0');
+                tglKembali.value = `${year}-${month}-${day}`;
+
+                const hrs = String(end.getHours()).padStart(2, '0');
+                const mins = String(end.getMinutes()).padStart(2, '0');
+                jamKembali.value = `${hrs}:${mins}`;
+
+                // Tandai tombol yang aktif
+                document.querySelectorAll('.fast-track-btn').forEach(b => b.classList.remove('active'));
+                if (activeBtn) activeBtn.classList.add('active');
+
+                validateScheduleClient(formattedPrice);
+            }
+
+            function validateScheduleClient(presetPrice = null) {
                 if (!tglMulai.value || !jamMulai.value || !tglKembali.value || !jamKembali.value) {
                     feedback.style.display = 'none';
                     return;
@@ -167,7 +275,6 @@
 
                 const start = new Date(`${tglMulai.value}T${jamMulai.value}`);
                 const end = new Date(`${tglKembali.value}T${jamKembali.value}`);
-                const now = new Date();
 
                 // Validasi tanggal kembali tidak boleh sebelum tanggal mulai (US-1003)
                 if (end <= start) {
@@ -185,20 +292,46 @@
                 const diffMs = end - start;
                 const hours = Math.round(diffMs / (1000 * 60 * 60));
 
+                let priceText = '';
+                const camId = parseInt(cameraSelect.value);
+                if (camId && cameraPriceLists[camId]) {
+                    const matchTier = cameraPriceLists[camId].tiers.find(t => t.hours === hours);
+                    if (matchTier) {
+                        priceText = ` • <strong>Estimasi Biaya: ${matchTier.price}</strong>`;
+                    }
+                }
+
                 feedback.style.display = 'block';
                 feedback.style.background = 'rgba(46, 204, 113, 0.12)';
                 feedback.style.border = '1px solid rgba(46, 204, 113, 0.3)';
                 feedback.style.color = 'var(--color-success)';
-                feedback.innerHTML = `✅ <strong>Jadwal Valid:</strong> Durasi sewa terhitung <strong>${hours} Jam</strong> (${(hours / 24).toFixed(1)} hari). Silakan klik validasi di bawah.`;
+                feedback.innerHTML = `✅ <strong>Jadwal Valid:</strong> Durasi sewa terhitung <strong>${hours} Jam</strong> (${(hours / 24).toFixed(1)} hari)${priceText}. Silakan klik tombol di bawah.`;
                 submitBtn.disabled = false;
                 submitBtn.style.opacity = '1';
             }
 
-            [tglMulai, jamMulai, tglKembali, jamKembali].forEach(el => {
-                el.addEventListener('change', validateScheduleClient);
-                el.addEventListener('input', validateScheduleClient);
+            // Event listener saat memilih kamera
+            cameraSelect.addEventListener('change', function() {
+                renderFastTrack();
+                validateScheduleClient();
             });
 
+            // Event listener input manual tanggal & jam
+            [tglMulai, jamMulai, tglKembali, jamKembali].forEach(el => {
+                el.addEventListener('change', () => {
+                    document.querySelectorAll('.fast-track-btn').forEach(b => b.classList.remove('active'));
+                    validateScheduleClient();
+                });
+                el.addEventListener('input', () => {
+                    document.querySelectorAll('.fast-track-btn').forEach(b => b.classList.remove('active'));
+                    validateScheduleClient();
+                });
+            });
+
+            // Inisialisasi awal jika kamera sudah terpilih
+            if (cameraSelect.value) {
+                renderFastTrack();
+            }
             validateScheduleClient();
         });
         </script>

@@ -11,7 +11,7 @@
     <!-- Navbar -->
     <nav class="navbar">
         <div class="container">
-            <a href="{{ route('home') }}" class="logo">📷 Digicam Padang</a>
+            <a href="{{ route('home') }}" class="logo"><img src="{{ asset('images/logo-grent.png') }}" alt="Logo Digicam Padang" style="height: 55px; width: 55px; object-fit: cover; border-radius: 50%; vertical-align: middle; margin-right: 8px; image-rendering: -webkit-optimize-contrast; box-shadow: 0 1px 4px rgba(0,0,0,0.12);"> Digicam Padang</a>
             <button class="hamburger" id="hamburger" aria-label="Buka menu" aria-expanded="false">
                 <span></span><span></span><span></span>
             </button>
@@ -147,6 +147,27 @@
                 flash.style.transform = 'translateY(-10px)';
                 setTimeout(() => flash.remove(), 400);
             }, 4000);
+        }
+
+        // Toggle Show / Hide Password
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const eyeOpen = btn.querySelector('.eye-open');
+            const eyeClosed = btn.querySelector('.eye-closed');
+            if (input.type === 'password') {
+                // Tampilkan password (buka mata)
+                input.type = 'text';
+                if (eyeOpen) eyeOpen.style.display = 'block';
+                if (eyeClosed) eyeClosed.style.display = 'none';
+                btn.setAttribute('aria-label', 'Sembunyikan Password');
+            } else {
+                // Sembunyikan password (mata coret)
+                input.type = 'password';
+                if (eyeOpen) eyeOpen.style.display = 'none';
+                if (eyeClosed) eyeClosed.style.display = 'block';
+                btn.setAttribute('aria-label', 'Lihat Password');
+            }
         }
     </script>
 </body>

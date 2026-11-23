@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class Booking extends Model
 {
@@ -14,10 +15,12 @@ class Booking extends Model
         'mulai_at',
         'selesai_at',
         'durasi_jam',
+        'estimasi_harga',
         'lokasi_pickup',
+        'catatan',
+        'metode_pembayaran',
         'status_booking',
         'status_pembayaran',
-        'metode_pembayaran',
         'payment_ref',
         'expired_at',
     ];
@@ -28,35 +31,23 @@ class Booking extends Model
         'expired_at' => 'datetime',
     ];
 
-    // -------------------------------------------------------------------------
-    // Relasi
-    // -------------------------------------------------------------------------
-
-    /**
-     * Pemilik booking.
-     */
+    // ── Relasi ──────────────────────────────────────────────────────────────
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Unit (kamera) yang dipesan.
-     */
     public function unit(): BelongsTo
     {
         return $this->belongsTo(Camera::class, 'unit_id');
     }
 
-    // -------------------------------------------------------------------------
-    // Query Scopes
-    // -------------------------------------------------------------------------
+    // ── Scopes ──────────────────────────────────────────────────────────────
 
     /**
-     * Scope: booking yang dianggap aktif / mengunci slot waktu.
-     *
+     * Scope: booking yang mengunci slot (US-1004).
      * Aktif = "Menunggu Verifikasi"
-     *       ATAU "Menunggu Pembayaran" DAN expired_at > now()
+     *       ATAU "Menunggu Pembayaran" + expired_at > now()
      */
     public function scopeAktif($query)
     {
@@ -70,16 +61,9 @@ class Booking extends Model
     }
 
     /**
-     * Scope: booking yang bentrok dengan rentang waktu tertentu pada sebuah unit.
-     *
-     * Dua rentang [A, B) dan [C, D) tumpang-tindih jika A < D && B > C.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  int    $unitId   ID kamera (unit)
-     * @param  string $mulai    Waktu mulai yang diinginkan (ISO / datetime string)
-     * @param  string $selesai  Waktu selesai yang diinginkan
+     * Scope: booking yang tumpang-tindih waktu pada unit tertentu.
      */
-    public function scopeBentrokDengan($query, int $unitId, string $mulai, string $selesai)
+    public function scopeBentrokDengan($query, int $unitId, $mulai, $selesai)
     {
         return $query
             ->where('unit_id', $unitId)
@@ -88,56 +72,30 @@ class Booking extends Model
             ->where('selesai_at', '>', $mulai);
     }
 
-    // -------------------------------------------------------------------------
-    // Helper statik
-    // -------------------------------------------------------------------------
+    // ── Helpers ─────────────────────────────────────────────────────────────
 
     /**
-     * Cek apakah slot waktu tertentu sudah terisi pada sebuah unit.
+     * Cek apakah slot sudah dipesan (US-1004).
      */
-    public static function adaBentrok(int $unitId, string $mulai, string $selesai): bool
+    public static function adaBentrok(int $unitId, $mulai, $selesai): bool
     {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('bookings')) {
+            return false;
+        }
         return static::bentrokDengan($unitId, $mulai, $selesai)->exists();
     }
 
     /**
-     * Tentukan status ketersediaan unit: "Tersedia" atau "Tersewa".
-     *
-     * Aturan bentrok (overlap):
-     * Dua rentang waktu [A, B) dan [C, D) dianggap bentrok jika:
-     *   mulai_A < selesai_B && selesai_A > mulai_B
-     *
-     * Jika ada bentrok -> "Tersewa", jika tidak ada -> "Tersedia".
-     */
-    public static function cekStatus(int $unitId, string $mulai, string $selesai): string
-    {
-        return static::adaBentrok($unitId, $mulai, $selesai) ? 'Tersewa' : 'Tersedia';
-    }
-
-    /**
-     * Logic perbandingan bentrok (overlap) murni antara dua rentang waktu:
-     * Dua rentang dianggap bentrok jika: mulai_A < selesai_B && selesai_A > mulai_B
-     *
-     * Jadwal berdampingan presisi (misal selesai 12.00 dan mulai 12.00) TIDAK dianggap bentrok.
-     */
-    public static function isOverlap(string $mulaiA, string $selesaiA, string $mulaiB, string $selesaiB): bool
-    {
-        $startA = \Carbon\Carbon::parse($mulaiA);
-        $endA   = \Carbon\Carbon::parse($selesaiA);
-        $startB = \Carbon\Carbon::parse($mulaiB);
-        $endB   = \Carbon\Carbon::parse($selesaiB);
-
-        return $startA->lt($endB) && $endA->gt($startB);
-    }
-
-    /**
-     * Generate kode booking unik.
-     * Format: BK-YYYYMMDD-XXXX  (XXXX = 4 huruf/angka acak)
+     * Generate kode booking unik: BK-YYYYMMDD-XXXX
      */
     public static function generateKode(): string
     {
+        if (!\Illuminate\Support\Facades\Schema::hasTable('bookings')) {
+            return 'BK-' . now('Asia/Jakarta')->format('Ymd') . '-' . strtoupper(Str::random(4));
+        }
+
         do {
-            $kode = 'BK-' . now('Asia/Jakarta')->format('Ymd') . '-' . strtoupper(\Str::random(4));
+            $kode = 'BK-' . now('Asia/Jakarta')->format('Ymd') . '-' . strtoupper(Str::random(4));
         } while (static::where('kode_booking', $kode)->exists());
 
         return $kode;
